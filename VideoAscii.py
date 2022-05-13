@@ -3,18 +3,19 @@ import os.path
 import imageio as imio
 import numpy as np
 import Ascii
+import AsciiDico
 from PIL import Image, ImageFont, ImageDraw
 
 
-def VideoToAscii(video, nbchar, tempFolder, finalpath, inversed, precision, step, fontpath):
+def VideoToAscii(video, nbchar, tempFolder, finalpath, inversed, precision, step, fontpath, backColor):
 
-    (lines, columns) = GetMyFrames(video, nbchar, tempFolder, inversed, precision, step)
+    (lines, columns) = (91, 0)#  GetMyFrames(video, nbchar, tempFolder, inversed, precision, step)
 
 
     (width, height) = video.get_meta_data()['size']
     fps = video.get_meta_data()['fps']
     # print(f"GetMyVideo(\"{tempFolder}\", \"{finalpath}\", {width}, {height}, {fps}, {lines}, {columns}, \"{fontpath}\")")
-    GetMyVideo(tempFolder, finalpath, width, height, fps, lines, columns, fontpath)
+    GetMyVideo(tempFolder, finalpath, width, height, fps, lines, columns, fontpath, backColor)
 
 
 
@@ -23,7 +24,8 @@ def GetMyFrames(video, nbchar, tempFolder, inverted, precision, step):
     count = 0
     (lines, columns) = (0, 0)
     for i, img in enumerate(video):
-        (lines, columns) = Ascii.ToAscii(img, nbchar, tempFolder + "img " + str(count) + ".txt", inverted, precision, step, 2)
+        img = Image.fromarray(img)
+        (lines, columns) = Ascii.ToAscii(img, nbchar, tempFolder + "img " + str(count) + ".txt", inverted, precision, step, 2, Arr= AsciiDico.ArrRobotoMono)
         count += 1
         print((lines, columns), count)
 
@@ -33,28 +35,30 @@ def GetMyFrames(video, nbchar, tempFolder, inverted, precision, step):
 
 
 
-def GetMyVideo(tempFolder, finalPath, width, height, fps, lines, columns, font):
-    print("test")
+def GetMyVideo(tempFolder, finalPath, width, height, fps, lines, columns, font, backColor):
     fileList = []
     for (dirpath, dirnames, filenames) in os.walk(tempFolder):
         fileList.extend(filenames)
         break
     print(fileList)
-
-    basicLetterHeight = 25
-    scale = height/lines / basicLetterHeight
+    scale = int(height/lines - 5)
     fontColor = (255, 255, 255)
-
+    img = np.zeros((height, width, 3), np.uint8)
+    FillBackGround(img, backColor, width, height)
+    #print(np.zeros((width, height, 3), np.uint8))
     video = imio.get_writer(finalPath, fps=fps)
     for i in range(len(fileList)):
-        img = GetAPillowImage(tempFolder + f"img {i}.txt", height, width, 10, font, fontColor, basicLetterHeight, lines)
-        video.append_data(img)
+        frame = GetAPillowImage(tempFolder + f"img {i}.txt", scale, font, fontColor, img.copy())
+        video.append_data(frame)
+
+def FillBackGround(img, color, width, height) :
+    for i in range(width) :
+        for j in range(height) :
+            img[j, i] = color
 
 
-
-def GetAPillowImage(imagename, height, width, scale, fontPath, fontColor, basicLetterHeight, lines):
-    img_cv = np.zeros((height, width, 3), np.uint8)
-    img_pl = Image.fromarray(img_cv)
+def GetAPillowImage(imagename, scale, fontPath, fontColor, img):
+    img_pl = Image.fromarray(img)
     draw = ImageDraw.Draw(img_pl)
 
     file = open(imagename, "r")
