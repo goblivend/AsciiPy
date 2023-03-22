@@ -132,3 +132,7 @@ dmypy.json
 
 #Adds
 Temp/*
+Videos/
+Images/
+*.swp
+*.lock

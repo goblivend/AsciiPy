@@ -161,17 +161,9 @@ def GetDicoImg(fontpath, file, lines) :
     height = 31*lines
     img = Image.new('RGB', (15, height), color='black')
     draw = ImageDraw.Draw(img)
-    draw.text((0, 0), ConcatenateLines(s), (255, 255, 255), font=imageFont)
+    draw.text((0, 0), "".join(s), (255, 255, 255), font=imageFont)
 
     return (img, height)
-
-
-def ConcatenateLines(lines) :
-    s = ""
-    for l in lines :
-        s += l
-    return s
-
 
 def Tryimg(fontpath):
     img = Image.new('RGB', (72, 135), color = 'black')

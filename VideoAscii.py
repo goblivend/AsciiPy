@@ -8,8 +8,8 @@ from PIL import Image, ImageFont, ImageDraw
 
 
 def VideoToAscii(video, nbchar, tempFolder, finalpath, inversed, precision, step, fontpath, backColor):
-
-    (lines, columns) = (91, 0)#  GetMyFrames(video, nbchar, tempFolder, inversed, precision, step)
+                    # (91, 0)
+    (lines, columns) = GetMyFrames(video, nbchar, tempFolder, inversed, precision, step)
 
 
     (width, height) = video.get_meta_data()['size']
@@ -69,15 +69,9 @@ def GetAPillowImage(imagename, scale, fontPath, fontColor, img):
 
     # bottomLeftCornerOfText = (0, 0)
 
-    draw.text((0, 0), ConcatenateLines(s), fontColor, font=imageFont)
+    draw.text((0, 0), "".join(s), fontColor, font=imageFont)
 
     return np.array(img_pl)
-
-def ConcatenateLines(lines) :
-    s = ""
-    for l in lines :
-        s += l
-    return s
 
 
 def tryimg(imagename, height, width, scale, fontPath, fontColor):
@@ -93,7 +87,7 @@ def tryimg(imagename, height, width, scale, fontPath, fontColor):
     file = open(imagename, "r")
     s = file.readlines()
 
-    draw.text(bottomLeftCornerOfText, ConcatenateLines(s), fontColor, font=imageFont)
+    draw.text(bottomLeftCornerOfText, "".join(s), fontColor, font=imageFont)
 
     return np.array(img_pl)
 

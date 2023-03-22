@@ -5,10 +5,6 @@ from PIL import Image
 
 #img.itemset((10,10,2),100) : 0 b, 1 g, 2 r
 
-def pprint(name) :
-    print(name)
-
-
 def Average(img, x, y, xTo, yTo, step, isGrayScale):
     myFunc = None
     if isGrayScale :
@@ -26,9 +22,12 @@ def Average(img, x, y, xTo, yTo, step, isGrayScale):
     return PixelSum / PixelNumber
 
 def FindLetter(average, Arr) :
-    for tuple in Arr :
-        if (tuple[0] <= average and average < tuple[1]) :
-            return tuple[2]
+    for mini, maxi, letter in Arr :
+        if (mini <= average and average < maxi) :
+            return letter
+    #for tuple in Arr :
+    #    if (tuple[0] <= average and average < tuple[1]) :
+    #        return tuple[2]
 
 def GetAverageGrayScale(img, i, j) :
     p = img.getpixel((i, j))
@@ -43,9 +42,7 @@ def GetAverageRGB(img, i, j) :
     if type(p) == int:
         p = (p, p, p)
 
-    r = p[0]
-    g = p[1]
-    b = p[2]
+    r, g, b  = p
 
     #r = img[j, i, 0]
     #g = img[j, i, 1]
