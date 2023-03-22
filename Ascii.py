@@ -1,25 +1,22 @@
 import AsciiDico
 import random
 import imageio as imio
+import numpy as np
 from PIL import Image
 
 #img.itemset((10,10,2),100) : 0 b, 1 g, 2 r
 
-def Average(img, x, y, xTo, yTo, step, isGrayScale):
-    myFunc = None
+def Average(img, isGrayScale):
+    if img.size == 0 :
+        #print(0)
+        return 0
+    res = None
     if isGrayScale :
-        myFunc = GetAverageGrayScale
+        res = GetAverageGrayScale(img)
     else :
-        myFunc = GetAverageRGB
-
-    PixelNumber = 0
-    PixelSum = 0
-
-    for i in range(x, xTo, step):
-        for j in range(y, yTo, step):
-            PixelNumber += 1
-            PixelSum += myFunc(img, i, j)
-    return PixelSum / PixelNumber
+        res = GetAverageRGB(img)
+    #print(res)
+    return res
 
 def FindLetter(average, Arr) :
     for mini, maxi, letter in Arr :
@@ -29,71 +26,67 @@ def FindLetter(average, Arr) :
     #    if (tuple[0] <= average and average < tuple[1]) :
     #        return tuple[2]
 
-def GetAverageGrayScale(img, i, j) :
-    p = img.getpixel((i, j))
-    if type(p) == int:
-        p = (p, p, p)
-    r, g, b  = p
+def GetAverageGrayScale(img) :
+    return np.average(img)
 
-    return r
-
-def GetAverageRGB(img, i, j) :
-    p = img.getpixel((i, j))
-    if type(p) == int:
-        p = (p, p, p)
-
-    r, g, b  = p
-
-    #r = img[j, i, 0]
-    #g = img[j, i, 1]
-    #b = img[j, i, 2]
-    return (21 * r) / 100 + (72 * g) / 100 + (7 * b) / 100
+def GetAverageRGB(img) :
+    return np.average(np.average(img, axis=2, weights=[21. / 100., 72. / 100.,7. / 100.]))
 
 
-def ToAscii(img, nbchar, path, inverted, precision, step, propxy = 2, Arr = AsciiDico.ArrBlocNote):
+def ToAscii(img, prevAscii, prevAverage, nbchar, path, inverted, precision, step, propxy = 2, Arr = AsciiDico.ArrBlocNote, width=0, height=0):
     isGrayScale = True
-    if not IsGrayScale(img, precision):
+    if not IsGrayScale(img, precision, width=width, height=height):
         # img = ToGrayScale(img)
         isGrayScale = False
 
-    width, height = img.size
+
     lines = 0
     columns = 0
-    file = open(path, "w")
     dx = int (width / nbchar)
     dy = propxy * dx
+
+    asciiImage = []
+    averageImage = []
+
+
     j = 0
     while j < height :
-        lines += 1
+        averageImage.append([])
+        asciiImage.append('')
         jTo = j + dy
         if jTo >= height:
             jTo = height - 1
         i = 0
         c = 0
         while i < width :
-            c += 1
             iTo = i + dx
             if iTo >= width:
                 iTo = width - 1
-            average = Average(img, int(i), int(j), int(iTo), int(jTo), step, isGrayScale)
+            averageImage[lines].append(Average(img[int(i):int(iTo):step, int(j):int(jTo):step], isGrayScale))
             if inverted:
-                average = 255 - average
-            file.write(FindLetter(int(average), Arr))
+                averageImage[lines][c] = 255 - averageImage[lines][c]
+            
+
+            #if (prevAscii and prevAverage[lines][c] == averageImage[lines][c]):
+            #    asciiImage[lines] += prevAscii[lines][c]
+            #else :
+            asciiImage[lines] += FindLetter(int(averageImage[lines][-1]), Arr)
+            c += 1
             i += dx
+        lines += 1
         columns = c
-        file.write("\n")
         j += dy
-    file.close()
-    return (lines, columns)
+    with open(path, 'w') as f :
+        print('\n'.join(asciiImage), file=f)
+    return (lines, columns, asciiImage, averageImage)
 
 
 
-def IsGrayScale(img, precision) :
-    width, height = img.size
-    draw = img.load()
+def IsGrayScale(img, precision, width=0, height=0) :
+    width, height, _ = img.shape
     for i in range(precision) :
         (x, y) = (random.randrange(width), random.randrange(height))
-        if draw[x, y][0] != draw[x, y][1] or draw[x, y][0] != draw[x, y][2] :
+        if img[x, y][0] != img[x, y][1] or img[x, y][0] != img[x, y][2] :
             return False
     return True
 

@@ -21,11 +21,15 @@ def VideoToAscii(video, nbchar, tempFolder, finalpath, inversed, precision, step
 
 
 def GetMyFrames(video, nbchar, tempFolder, inverted, precision, step):
+    (width, height) = video.get_meta_data()['size']
+
+
     count = 0
     (lines, columns) = (0, 0)
+    prevAscii = None
+    prevAverage = None
     for i, img in enumerate(video):
-        img = Image.fromarray(img)
-        (lines, columns) = Ascii.ToAscii(img, nbchar, tempFolder + "img " + str(count) + ".txt", inverted, precision, step, 2, Arr= AsciiDico.ArrRobotoMono)
+        (lines, columns, prevAscii, prevAverage) = Ascii.ToAscii(img, prevAscii, prevAverage, nbchar, tempFolder + "img " + str(count) + ".txt", inverted, precision, step, 2, Arr= AsciiDico.ArrRobotoMono, width=width, height=height)
         count += 1
         print((lines, columns), count)
 
